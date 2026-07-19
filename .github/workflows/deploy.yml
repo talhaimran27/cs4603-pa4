@@ -12,20 +12,77 @@ name: deploy
 on:
   push:
     branches: [main]
+
   pull_request:
+
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      # TODO: install uv, sync deps, run `ruff check` and the smoke test
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run Ruff
+        run: uv run ruff check agent/ client/
+
+      - name: Run smoke test
+        run: uv run pytest -q tests/test_smoke.py
 
   deploy:
-    needs: lint-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
+
+    needs: lint-and-test
+
+    if: >
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request'
+
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+      DATABRICKS_MODEL: databricks-meta-llama-3-3-70b-instruct
+      EMBEDDINGS_ENDPOINT: databricks-gte-large-en
+
+      UC_CATALOG: main
+      UC_SCHEMA: default
+
+      VECTOR_SEARCH_ENDPOINT: talha-vs-endpoint
+      VECTOR_SEARCH_INDEX: main.default.talha_analyst_index
+
+      SERVING_ENDPOINT_NAME: talha-document-analyst
+      SECRET_SCOPE: cs4603-deploy
+
+      DOCUMENT_ANALYST_MODEL_NAME: pa4_document_analyst
+      MLFLOW_EXPERIMENT_NAME: /Shared/pa4-document-analyst
+
     steps:
-      - uses: actions/checkout@v4
-      # TODO: install deps and run `python deployment/deploy.py` with secrets
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Python 3.12
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Deploy Document Analyst
+        run: uv run python deployment/deploy.py
