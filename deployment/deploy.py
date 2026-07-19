@@ -357,9 +357,21 @@ def create_or_update_endpoint(uc_name: str, version: str) -> str:
 
 
 if __name__ == "__main__":
-    # name, ver = log_and_register()
-    # create_or_update_endpoint(name, ver)
-    create_or_update_endpoint(
-        "main.default.pa4_document_analyst",
-        "6",
+    model_name, model_version = log_and_register()
+
+    endpoint_url = create_or_update_endpoint(
+        model_name,
+        model_version,
     )
+
+    print("=" * 72)
+    print("Deployment summary")
+    print(f"Registered model:   {model_name}")
+    print(f"Registered version: {model_version}")
+    print(f"Endpoint URL:       {endpoint_url}")
+    print("Endpoint status:    READY")
+    print("=" * 72)
+
+
+
+#used again
