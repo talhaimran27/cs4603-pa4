@@ -2787,6 +2787,7 @@ name = "pa4-document-analyst"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "databricks-agents" },
     { name = "databricks-langchain" },
     { name = "databricks-sdk" },
     { name = "databricks-vectorsearch" },
@@ -2820,6 +2821,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "databricks-agents", specifier = ">=1.11.0" },
     { name = "databricks-agents", marker = "extra == 'agents'", specifier = ">=0.5.0" },
     { name = "databricks-langchain", specifier = ">=0.1.0" },
     { name = "databricks-sdk", specifier = ">=0.23.0" },
